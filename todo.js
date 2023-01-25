@@ -1,4 +1,7 @@
-const tasks=[];
+( function(){
+
+
+let tasks=[];
 const taskList= document.getElementById('list');
 const addTaskInput= document.getElementById('add');
 const taskCounter= document.getElementById('tasks-counter');
@@ -6,12 +9,40 @@ const taskCounter= document.getElementById('tasks-counter');
 
 console.log('Working');
 
+async function fetchTodos() {
+   // Get Request  // and return prmoise
+    /*fetch('https://jsonplaceholder.typicode.com/todos').then(function(response){
+       // console.log(response);
+        return response.json();
+    }).then(function(data){
+        tasks=data.slice(0,10);
+        renderList();
+        //console.log(data);
+    })
+     .catch(function(error){
+        console.log('error',error);
+     })
+    */
+    try{
+     const response=await fetch('https://jsonplaceholder.typicode.com/todos');
+     const data= await response.json();
+     tasks=data.slice(0,10);
+     renderList();
+
+    } catch (error){
+       console.log(error);
+    }
+  
+
+    }
+
+
 function addTaskToDOM(task){
     console.log(task)
    const li=document.createElement('li');
    li.innerHTML=`
-      <input type="checkbox" id="${task.id}"  ${task.done?'checked' : ''} class="custom-checkbox">
-      <label for="${task.id}">${task.text}</label>
+      <input type="checkbox" id="${task.id}"  ${task.completed?'checked' : ''} class="custom-checkbox">
+      <label for="${task.id}">${task.title}</label>
       <img src="trash-solid.svg" class="delete" data-id="${task.id}" />
      `;
 
@@ -30,11 +61,11 @@ function renderList(){
 
 function toggleTask(taskId){
     const task=tasks.filter(function(task){
-        return task.id==taskId;
+        return task.id==Number(taskId);
     })
     if(task.length>0){  // if task is empty or not
        const currentTask=task[0];
-       currentTask.done=!currentTask.done;
+       currentTask.completed=!currentTask.completed;
        renderList();
        showNotification('Task Toggled Successfully');
        return;
@@ -84,9 +115,10 @@ function handleInputKeyPress(e){
        }
 
        const task={
-        text,   // text, basically means text: text,
-        id: Date.now().toString(), //Date.now will create timestamp and we are converting into string
-        done: false
+        title: text,   // text, basically means text: text,
+       // id: Date.now().toString(), //Date.now will create timestamp and we are converting into string
+       id: Date.now(),
+       completed: false
        }
        
        e.target.value= ''; // making input box as empty after clicking enter
@@ -114,5 +146,14 @@ function handleClickListner(e){
 
 }
 
-addTaskInput.addEventListener('keyup', handleInputKeyPress)
-document.addEventListener('click', handleClickListner);
+function initializeApp() {
+     fetchTodos();
+    addTaskInput.addEventListener('keyup', handleInputKeyPress)
+    document.addEventListener('click', handleClickListner);
+
+}
+
+initializeApp();
+})() 
+
+
